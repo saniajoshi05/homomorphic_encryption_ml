@@ -1,11 +1,11 @@
 // 10_encrypted_linear_model.cpp
-
-#include "examples.h"
 #include <chrono>
 #include <cmath>
+#include "examples.h"
 
 using namespace std;
 using namespace seal;
+
 using clock_type = std::chrono::high_resolution_clock;
 using ms = std::chrono::duration<double, std::milli>;
 
@@ -25,16 +25,104 @@ static double vmax(const vector<double> &v)
     return m;
 }
 
+struct ExperimentResult
+{
+    int n;
+    double avg_total_ms;
+    double avg_rot_ms;
+    double avg_err;
+    double max_err;
+};
+
+static ExperimentResult run_experiment(
+    int n, int runs, CKKSEncoder &encoder, Encryptor &encryptor, Evaluator &evaluator, Decryptor &decryptor,
+    const GaloisKeys &gal_keys)
+{
+    double scale = pow(2.0, 40);
+
+    vector<double> x(n), w(n);
+    for (int i = 0; i < n; i++)
+    {
+        x[i] = i + 1;
+        w[i] = 0.1 + 0.01 * (i % 50);
+    }
+    double b = 0.7;
+
+    vector<double> t_total_vec, t_rot_vec, err_vec;
+    t_total_vec.reserve(runs);
+    t_rot_vec.reserve(runs);
+    err_vec.reserve(runs);
+
+    for (int r = 0; r < runs; r++)
+    {
+        // Plain baseline
+        double y_plain = b;
+        for (int i = 0; i < n; i++)
+            y_plain += w[i] * x[i];
+
+        auto t_total_start = clock_type::now();
+
+        // Encode + Encrypt
+        Plaintext x_plain;
+        encoder.encode(x, scale, x_plain);
+        Ciphertext x_enc;
+        encryptor.encrypt(x_plain, x_enc);
+
+        Plaintext w_plain;
+        encoder.encode(w, scale, w_plain);
+
+        Ciphertext prod;
+        evaluator.multiply_plain(x_enc, w_plain, prod);
+        evaluator.rescale_to_next_inplace(prod);
+
+        // Rotations (dominant cost)
+        auto t_rot_start = clock_type::now();
+        Ciphertext sum = prod;
+        for (int step = 1; step < n; step <<= 1)
+        {
+            Ciphertext rot;
+            evaluator.rotate_vector(sum, step, gal_keys, rot);
+            evaluator.add_inplace(sum, rot);
+        }
+        auto t_rot_end = clock_type::now();
+        t_rot_vec.push_back(ms(t_rot_end - t_rot_start).count());
+
+        // Add bias
+        Plaintext b_plain;
+        encoder.encode(b, sum.scale(), b_plain);
+        evaluator.mod_switch_to_inplace(b_plain, sum.parms_id());
+        evaluator.add_plain_inplace(sum, b_plain);
+
+        // Decrypt + Decode
+        Plaintext dec;
+        decryptor.decrypt(sum, dec);
+        vector<double> out;
+        encoder.decode(dec, out);
+
+        auto t_total_end = clock_type::now();
+        t_total_vec.push_back(ms(t_total_end - t_total_start).count());
+
+        err_vec.push_back(fabs(y_plain - out[0]));
+    }
+
+    ExperimentResult res;
+    res.n = n;
+    res.avg_total_ms = avg(t_total_vec);
+    res.avg_rot_ms = avg(t_rot_vec);
+    res.avg_err = avg(err_vec);
+    res.max_err = vmax(err_vec);
+    return res;
+}
+
 void example_encrypted_linear_model()
 {
-    print_example_banner("Example: Encrypted Linear Model (y = w*x + b)");
+    print_example_banner("Example: Encrypted Linear Model (Size Sweep)");
 
     EncryptionParameters parms(scheme_type::ckks);
     size_t poly_modulus_degree = 8192;
     parms.set_poly_modulus_degree(poly_modulus_degree);
     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));
 
-    double scale = pow(2.0, 40);
     SEALContext context(parms);
     print_parameters(context);
     cout << endl;
@@ -52,119 +140,28 @@ void example_encrypted_linear_model()
     Decryptor decryptor(context, secret_key);
     CKKSEncoder encoder(context);
 
-    // Toy ML-style data: y = w·x + b
-    vector<double> x = { 1, 2, 3, 4, 5 };
-    vector<double> w = { 0.5, -1.2, 2.0, 0.3, 1.1 };
-    double b = 0.7;
+    int runs = 5;
+    vector<int> sizes = { 8, 16, 32, 64, 128 };
 
-    const int runs = 5;
-    vector<double> t_plain_vec, t_enc_vec, t_mul_vec, t_rot_vec, t_bias_vec, t_dec_vec, t_total_vec;
-    vector<double> err_vec;
+    cout << "Slots available: " << encoder.slot_count() << endl;
+    cout << "Runs per size: " << runs << endl << endl;
 
-    t_plain_vec.reserve(runs);
-    t_enc_vec.reserve(runs);
-    t_mul_vec.reserve(runs);
-    t_rot_vec.reserve(runs);
-    t_bias_vec.reserve(runs);
-    t_dec_vec.reserve(runs);
-    t_total_vec.reserve(runs);
-    err_vec.reserve(runs);
+    cout << "n\tavg_total_ms\tavg_rot_ms\tavg_err\t\tmax_err" << endl;
+    cout << "---------------------------------------------------------------" << endl;
 
-    double y_plain = 0.0;
-    double last_dec = 0.0;
-    for (int r = 0; r < runs; r++){ 
-        auto t_plain_start = clock_type::now();
-        y_plain = b;
-        for (size_t i = 0; i < x.size(); i++)
-            y_plain += w[i] * x[i];
-        auto t_plain_end = clock_type::now();
-        double t_plain_ms = ms(t_plain_end - t_plain_start).count();
-        t_plain_vec.push_back(t_plain_ms);
-
-        // Encode + Encrypt timing
-        auto t_enc_start = clock_type::now();
-        Plaintext x_plain;
-        encoder.encode(x, scale, x_plain);
-
-        Ciphertext x_encrypted;
-        encryptor.encrypt(x_plain, x_encrypted);
-        auto t_enc_end = clock_type::now();
-        double t_enc_ms = ms(t_enc_end - t_enc_start).count();
-        t_enc_vec.push_back(t_enc_ms);
-
-        // Encode weights (not encrypted)
-        Plaintext w_plain;
-        encoder.encode(w, scale, w_plain);
-
-        // Multiply + Rescale timing
-        auto t_mul_start = clock_type::now();
-        Ciphertext prod;
-        evaluator.multiply_plain(x_encrypted, w_plain, prod);
-        evaluator.rescale_to_next_inplace(prod);
-        auto t_mul_end = clock_type::now();
-        double t_mul_ms = ms(t_mul_end - t_mul_start).count();
-        t_mul_vec.push_back(t_mul_ms);
-
-        // Rotations + Adds timing
-        auto t_rot_start = clock_type::now();
-        Ciphertext sum = prod;
-        for (int step = 1; step < (int)x.size(); step <<= 1)
+    for (int n : sizes)
+    {
+        if (n > (int)encoder.slot_count())
         {
-            Ciphertext rotated;
-            evaluator.rotate_vector(sum, step, gal_keys, rotated);
-            evaluator.add_inplace(sum, rotated);
+            cout << n << "\t(SKIPPED)" << endl;
+            continue;
         }
-        auto t_rot_end = clock_type::now();
-        double t_rot_ms = ms(t_rot_end - t_rot_start).count();
-        t_rot_vec.push_back(t_rot_ms);
 
-        // Add bias timing
-        auto t_bias_start = clock_type::now();
-        Plaintext b_plain;
-        encoder.encode(b, sum.scale(), b_plain);
-        evaluator.mod_switch_to_inplace(b_plain, sum.parms_id());
-        evaluator.add_plain_inplace(sum, b_plain);
-        auto t_bias_end = clock_type::now();
-        double t_bias_ms = ms(t_bias_end - t_bias_start).count();
-        t_bias_vec.push_back(t_bias_ms);
+        auto res = run_experiment(n, runs, encoder, encryptor, evaluator, decryptor, gal_keys);
 
-        // Decrypt + Decode timing
-        auto t_dec_start = clock_type::now();
-        Plaintext dec;
-        decryptor.decrypt(sum, dec);
-
-        vector<double> out;
-        encoder.decode(dec, out);
-        auto t_dec_end = clock_type::now();
-        double t_dec_ms = ms(t_dec_end - t_dec_start).count();
-        t_dec_vec.push_back(t_dec_ms);
-
-        last_dec = out[0];
-        double err = fabs(y_plain - out[0]);
-        err_vec.push_back(err);
-
-        double t_total = t_enc_ms + t_mul_ms + t_rot_ms + t_bias_ms + t_dec_ms;
-        t_total_vec.push_back(t_total);
+        cout << res.n << "\t" << res.avg_total_ms << "\t\t" << res.avg_rot_ms << "\t\t" << res.avg_err << "\t"
+             << res.max_err << endl;
     }
 
-    // Print one representative result (last run)
-    cout << "Plaintext y = w*x + b: " << y_plain << endl;
-    cout << "Decrypted y (slot 0): " << last_dec << endl;
-    cout << "Absolute error (last run): " << fabs(y_plain - last_dec) << endl;
-
-    cout << "\nAveraged over " << runs << " runs (ms):" << endl;
-    cout << "  Plaintext dot product: " << avg(t_plain_vec) << endl;
-    cout << "  Encode+Encrypt:        " << avg(t_enc_vec) << endl;
-    cout << "  Multiply+Rescale:      " << avg(t_mul_vec) << endl;
-    cout << "  Rotations+Adds:        " << avg(t_rot_vec) << endl;
-    cout << "  Add bias:              " << avg(t_bias_vec) << endl;
-    cout << "  Decrypt+Decode:        " << avg(t_dec_vec) << endl;
-    cout << "  Total encrypted path:  " << avg(t_total_vec) << endl;
-
-    cout << "\nError:" << endl;
-    cout << "  Avg abs error: " << avg(err_vec) << endl;
-    cout << "  Max abs error: " << vmax(err_vec) << endl;
+    cout << endl << "Experiment complete." << endl;
 }
-    
-    
-    
