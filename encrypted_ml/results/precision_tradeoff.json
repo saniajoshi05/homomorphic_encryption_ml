@@ -1,0 +1,29 @@
+[
+  {
+    "n_bits": 6,
+    "acc_plain": 0.98,
+    "acc_encrypted": 0.98,
+    "accuracy_drop": 0.0,
+    "plain_time_ms": 0.004057884216308594,
+    "encrypted_time_ms": 7.874937057495116,
+    "slowdown": 1940.6509988249118
+  },
+  {
+    "n_bits": 8,
+    "acc_plain": 0.98,
+    "acc_encrypted": 0.98,
+    "accuracy_drop": 0.0,
+    "plain_time_ms": 0.0045299530029296875,
+    "encrypted_time_ms": 6.313791275024414,
+    "slowdown": 1393.7873684210526
+  },
+  {
+    "n_bits": 10,
+    "acc_plain": 0.98,
+    "acc_encrypted": 0.98,
+    "accuracy_drop": 0.0,
+    "plain_time_ms": 0.004868507385253906,
+    "encrypted_time_ms": 7.050638198852539,
+    "slowdown": 1448.2135161606268
+  }
+]

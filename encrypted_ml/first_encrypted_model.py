@@ -102,7 +102,12 @@ results = {
     "infer_time_enc_per_sample_ms": float(infer_time_enc / len(X_test) * 1000),
 }
 
-with open("results/day1_results.json", "w") as f:
+from pathlib import Path
+
+out_dir = Path(__file__).resolve().parent / "results"
+out_dir.mkdir(parents=True, exist_ok=True)
+
+with open(out_dir / "day1_results.json", "w") as f:
     json.dump(results, f, indent=2)
 
-print("\n✓ Saved: results/day1_results.json")
+print(f"\n✓ Saved: {out_dir / 'day1_results.json'}")

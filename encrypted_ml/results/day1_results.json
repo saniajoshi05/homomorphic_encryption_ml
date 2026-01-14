@@ -1,28 +1,17 @@
-﻿============================================================
-ENCRYPTED LOGISTIC REGRESSION - PROOF OF CONCEPT
-============================================================
-
-Dataset: 398 train, 50 test samples
-Features: 30
-
---- PLAINTEXT MODEL ---
-Train time:   0.4500s
-Infer time:   0.0002s
-Accuracy:     0.9800
-
---- ENCRYPTED MODEL (Concrete-ML) ---
-Training (plaintext training, FHE-ready model)...
-Train time:   0.3560s
-Compiling for FHE (builds the encrypted circuit)...
-Compile time: 0.2687s
-Running encrypted inference (FHE execute)...
-Infer time:   0.3545s
-Accuracy:     0.9800
-
---- SUMMARY ---
-Plain acc:    0.9800
-Enc acc:      0.9800
-Acc drop:     0.0000
-Slowdown:     1602.3x
-
-✓ Saved: results/day1_results.json
+{
+  "dataset": "breast_cancer",
+  "model": "LogisticRegression",
+  "n_bits": 8,
+  "n_train": 398,
+  "n_test": 50,
+  "n_features": 30,
+  "acc_plain": 0.98,
+  "acc_enc": 0.98,
+  "train_time_plain_s": 0.38423585891723633,
+  "train_time_enc_s": 0.40030598640441895,
+  "compile_time_s": 0.17255306243896484,
+  "infer_time_plain_total_s": 0.00022411346435546875,
+  "infer_time_enc_total_s": 0.41632699966430664,
+  "infer_time_plain_per_sample_ms": 0.004482269287109375,
+  "infer_time_enc_per_sample_ms": 8.326539993286133
+}
