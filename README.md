@@ -19,3 +19,23 @@ cd cpp/myseal
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 build/Release/myseal.exe 2.5 -1.7 -2 0 1.5 3.2
+
+## Encrypted Machine Learning (Concrete-ML)
+
+This folder contains experiments using Concrete-ML to evaluate
+machine learning inference on encrypted data.
+
+### Files
+- `first_encrypted_model.py`  
+  Proof-of-concept encrypted logistic regression using CKKS-style FHE.
+
+- `results/`  
+  Stores experimental outputs such as accuracy and timing results.
+
+### Purpose
+This work extends earlier Microsoft SEAL experiments by using
+a higher-level encrypted ML framework to evaluate:
+- accuracy impact of encryption
+- performance overhead
+- feasibility of encrypted ML inference in practice
+
