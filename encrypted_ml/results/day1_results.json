@@ -1,0 +1,28 @@
+﻿============================================================
+ENCRYPTED LOGISTIC REGRESSION - PROOF OF CONCEPT
+============================================================
+
+Dataset: 398 train, 50 test samples
+Features: 30
+
+--- PLAINTEXT MODEL ---
+Train time:   0.4500s
+Infer time:   0.0002s
+Accuracy:     0.9800
+
+--- ENCRYPTED MODEL (Concrete-ML) ---
+Training (plaintext training, FHE-ready model)...
+Train time:   0.3560s
+Compiling for FHE (builds the encrypted circuit)...
+Compile time: 0.2687s
+Running encrypted inference (FHE execute)...
+Infer time:   0.3545s
+Accuracy:     0.9800
+
+--- SUMMARY ---
+Plain acc:    0.9800
+Enc acc:      0.9800
+Acc drop:     0.0000
+Slowdown:     1602.3x
+
+✓ Saved: results/day1_results.json
