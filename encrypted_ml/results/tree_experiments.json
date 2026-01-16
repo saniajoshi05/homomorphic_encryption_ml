@@ -1,0 +1,41 @@
+[
+  {
+    "model": "DecisionTreeClassifier",
+    "max_depth": 2,
+    "n_bits": 8,
+    "n_test": 50,
+    "acc_plain": 0.88,
+    "acc_enc": 0.88,
+    "compile_s": 1.0935149192810059,
+    "plain_infer_total_s": 0.0004527568817138672,
+    "enc_infer_total_s": 28.117790460586548,
+    "slowdown": 62103.507635597685,
+    "enc_infer_per_sample_ms": 562.355809211731
+  },
+  {
+    "model": "DecisionTreeClassifier",
+    "max_depth": 3,
+    "n_bits": 8,
+    "n_test": 50,
+    "acc_plain": 0.9,
+    "acc_enc": 0.9,
+    "compile_s": 0.9637646675109863,
+    "plain_infer_total_s": 0.00023245811462402344,
+    "enc_infer_total_s": 30.36289072036743,
+    "slowdown": 130616.60923076923,
+    "enc_infer_per_sample_ms": 607.2578144073486
+  },
+  {
+    "model": "DecisionTreeClassifier",
+    "max_depth": 5,
+    "n_bits": 8,
+    "n_test": 50,
+    "acc_plain": 0.88,
+    "acc_enc": 0.9,
+    "compile_s": 0.8379878997802734,
+    "plain_infer_total_s": 0.0002124309539794922,
+    "enc_infer_total_s": 58.39477276802063,
+    "slowdown": 274888.24803591473,
+    "enc_infer_per_sample_ms": 1167.8954553604126
+  }
+]
