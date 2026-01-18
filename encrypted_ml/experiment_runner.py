@@ -15,12 +15,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression as PlainLR
 from concrete.ml.sklearn import LogisticRegression as EncryptedLR
 
-
 RESULTS_DIR = Path("encrypted_ml/results")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def run_experiment(n_bits, n_test=50):
+def run_experiment(n_bits, n_test=50, noise_std=0.15):
     data = load_breast_cancer()
     X, y = data.data, data.target
 
@@ -35,8 +34,13 @@ def run_experiment(n_bits, n_test=50):
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
 
-    # Plain model
-    plain = PlainLR(max_iter=1000)
+    # Make task harder so n_bits effect is visible (controlled noise)
+    rng = np.random.default_rng(42)
+    X_train = X_train + rng.normal(0, noise_std, X_train.shape)
+    X_test = X_test + rng.normal(0, noise_std, X_test.shape)
+
+    # Plain model (baseline)
+    plain = PlainLR(max_iter=5000, C=2.0, solver="lbfgs")
     plain.fit(X_train, y_train)
 
     t0 = time.time()
@@ -45,7 +49,7 @@ def run_experiment(n_bits, n_test=50):
     acc_plain = accuracy_score(y_test, y_plain)
 
     # Encrypted model
-    enc = EncryptedLR(n_bits=n_bits)
+    enc = EncryptedLR(n_bits=n_bits, random_state=42)
     enc.fit(X_train, y_train)
     enc.compile(X_train)
 
@@ -55,20 +59,23 @@ def run_experiment(n_bits, n_test=50):
     acc_enc = accuracy_score(y_test, y_enc)
 
     return {
+        "dataset": "breast_cancer",
+        "n_test": n_test,
+        "noise_std": noise_std,
         "n_bits": n_bits,
-        "acc_plain": acc_plain,
-        "acc_encrypted": acc_enc,
-        "accuracy_drop": acc_plain - acc_enc,
-        "plain_time_ms": plain_time / n_test * 1000,
-        "encrypted_time_ms": enc_time / n_test * 1000,
-        "slowdown": enc_time / max(plain_time, 1e-9)
+        "acc_plain": float(acc_plain),
+        "acc_encrypted": float(acc_enc),
+        "accuracy_drop": float(acc_plain - acc_enc),
+        "plain_time_ms": float(plain_time / n_test * 1000),
+        "encrypted_time_ms": float(enc_time / n_test * 1000),
+        "slowdown": float(enc_time / max(plain_time, 1e-9)),
     }
 
 
 def main():
     results = []
 
-    for n_bits in [6, 8, 10]:
+    for n_bits in [4, 6, 8, 10, 12]:
         print(f"\nRunning experiment with n_bits={n_bits}")
         res = run_experiment(n_bits)
         results.append(res)
@@ -76,6 +83,7 @@ def main():
         print(
             f"Acc plain={res['acc_plain']:.3f}, "
             f"Acc enc={res['acc_encrypted']:.3f}, "
+            f"Drop={res['accuracy_drop']:.3f}, "
             f"Slowdown={res['slowdown']:.1f}x"
         )
 

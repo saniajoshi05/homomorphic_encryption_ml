@@ -1,29 +1,62 @@
 [
   {
+    "dataset": "breast_cancer",
+    "n_test": 50,
+    "noise_std": 0.15,
+    "n_bits": 4,
+    "acc_plain": 0.98,
+    "acc_encrypted": 0.94,
+    "accuracy_drop": 0.040000000000000036,
+    "plain_time_ms": 0.003681182861328125,
+    "encrypted_time_ms": 6.730432510375977,
+    "slowdown": 1828.3341968911918
+  },
+  {
+    "dataset": "breast_cancer",
+    "n_test": 50,
+    "noise_std": 0.15,
     "n_bits": 6,
     "acc_plain": 0.98,
     "acc_encrypted": 0.98,
     "accuracy_drop": 0.0,
-    "plain_time_ms": 0.005164146423339844,
-    "encrypted_time_ms": 7.808423042297363,
-    "slowdown": 1512.045244690674
+    "plain_time_ms": 0.0039768218994140625,
+    "encrypted_time_ms": 5.56790828704834,
+    "slowdown": 1400.089928057554
   },
   {
+    "dataset": "breast_cancer",
+    "n_test": 50,
+    "noise_std": 0.15,
     "n_bits": 8,
     "acc_plain": 0.98,
     "acc_encrypted": 0.98,
     "accuracy_drop": 0.0,
-    "plain_time_ms": 0.0041675567626953125,
-    "encrypted_time_ms": 6.408429145812988,
-    "slowdown": 1537.6945080091534
+    "plain_time_ms": 0.005354881286621094,
+    "encrypted_time_ms": 7.502551078796387,
+    "slowdown": 1401.0676758682102
   },
   {
+    "dataset": "breast_cancer",
+    "n_test": 50,
+    "noise_std": 0.15,
     "n_bits": 10,
     "acc_plain": 0.98,
     "acc_encrypted": 0.98,
     "accuracy_drop": 0.0,
-    "plain_time_ms": 0.005397796630859375,
-    "encrypted_time_ms": 6.988763809204102,
-    "slowdown": 1294.743816254417
+    "plain_time_ms": 0.0033473968505859375,
+    "encrypted_time_ms": 6.828927993774414,
+    "slowdown": 2040.0712250712252
+  },
+  {
+    "dataset": "breast_cancer",
+    "n_test": 50,
+    "noise_std": 0.15,
+    "n_bits": 12,
+    "acc_plain": 0.98,
+    "acc_encrypted": 0.98,
+    "accuracy_drop": 0.0,
+    "plain_time_ms": 0.004115104675292969,
+    "encrypted_time_ms": 7.4434661865234375,
+    "slowdown": 1808.8157589803013
   }
 ]
