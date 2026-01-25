@@ -1,47 +1,77 @@
-﻿# Machine Learning on Encrypted Data using Homomorphic Encryption (CKKS)
-
-**Student:** Sania Dinesh Joshi (40425922)  
-**Supervisor:** Dr. Amir Sabbagh Molahosseini  
+﻿## Machine Learning on Encrypted Data using Homomorphic Encryption (CKKS)
+** Student: Sania Dinesh Joshi (40425922)
+** Supervisor: Dr. Amir Sabbagh Molahosseini
 
 ## Project Summary
-This project explores privacy-preserving Machine Learning using the Microsoft SEAL library (CKKS scheme).  
-The goal is to perform encrypted arithmetic and measure performance–accuracy trade-offs when training or evaluating models on encrypted data.
+This project investigates privacy‑preserving machine learning using Fully Homomorphic Encryption (FHE).
+The work is divided into two complementary parts:
+
+Low‑level encrypted arithmetic using the Microsoft SEAL library (CKKS scheme)
+
+High‑level encrypted machine learning inference using the Concrete‑ML framework
+
+The goal is to evaluate the feasibility of performing ML inference on encrypted data, and to measure the trade‑offs between accuracy, runtime, and model complexity.
 
 ## Repository Structure
-- `cpp/myseal/` → C++ implementation using Microsoft SEAL  
-- `python/` → initial experiments with the TenSEAL Python library  
-- `reports/` → meeting notes, progress reports, and results  
-- `scripts/` → helper scripts for parameter testing and benchmarking
+Folder	Description
+cpp/myseal/	      C++ implementation using Microsoft SEAL (CKKS). Includes encrypted arithmetic and vector operations.
+python/	          Early experiments using TenSEAL for encrypted inference.
+encrypted_ml/	  Concrete‑ML experiments for encrypted logistic regression, decision trees, and XGBoost.
+reports/	      Meeting notes, progress reports, and experimental results.
+scripts/	      Helper scripts for parameter sweeps, benchmarking, and reproducibility.
+notebooks/	      Jupyter notebooks, including the Concrete‑ML Credit Scoring baseline.
 
-## Encrypted Machine Learning (Concrete-ML)
+## Encrypted Machine Learning (Concrete‑ML)
+This section evaluates encrypted inference using the Concrete‑ML framework.
+Experiments include:
 
-This folder contains experiments using Concrete-ML to evaluate
-machine learning inference on encrypted data.
+Logistic Regression (sklearn vs Concrete‑ML)
 
-### Files
-- `first_encrypted_model.py`  
-  Proof-of-concept encrypted logistic regression using CKKS-style FHE.
+Decision Tree Classifier (sklearn vs Concrete‑ML)
 
-- `results/`  
-  Stores experimental outputs such as accuracy and timing results.
+XGBoost (sklearn vs Concrete‑ML)
 
-### Purpose
-This work extends earlier Microsoft SEAL experiments by using
-a higher-level encrypted ML framework to evaluate:
-- accuracy impact of encryption
-- performance overhead
-- feasibility of encrypted ML inference in practice
+Quantization effects (n_bits)
 
+FHE vs simulated vs plaintext inference
 
-## Encrypted ML Experiments (Concrete-ML)
+## Key Findings
+Logistic Regression under FHE achieves identical accuracy to plaintext (≈98%).
 
-- Logistic Regression under FHE shows identical accuracy to plaintext (≈98%)
-- Encrypted inference incurs 1000×–2000× slowdown
-- Decision Trees show severe scalability issues:
-  - Encrypted inference time grows rapidly with tree depth
-  - Accuracy does not necessarily improve with complexity
+Encrypted inference introduces a 1000×–2000× slowdown, depending on quantization.
 
-These results highlight the trade-off between privacy and computational cost in homomorphic encryption.
+Decision Trees show poor scalability under FHE:
+
+inference time grows exponentially with tree depth
+
+accuracy does not necessarily improve with deeper trees
+
+Quantization (n_bits) is the dominant factor controlling runtime and model feasibility.
+
+These results highlight the fundamental trade‑off between privacy and computational cost in homomorphic encryption.
+
+## How to Run the Concrete‑ML Experiments
+1. Install dependencies
+bash
+pip install -r requirements.txt
+2. Launch Jupyter
+bash
+jupyter notebook
+3. Open the notebook
+Navigate to:
+
+Code
+notebooks/CreditScoring.ipynb
+4. Run the baseline
+## The notebook evaluates:
+
+sklearn models
+
+Concrete‑ML quantized models
+
+FHE inference (with configurable sample size for speed)
+
+Results are stored in a pandas DataFrame for comparison.
 
 
 ## How to Build and Run (C++)
