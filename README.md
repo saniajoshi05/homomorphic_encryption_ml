@@ -1,84 +1,101 @@
-﻿## Machine Learning on Encrypted Data using Homomorphic Encryption (CKKS)
-Student: Sania Dinesh Joshi (40425922)
-Supervisor: Dr. Amir Sabbagh Molahosseini
+﻿# Machine Learning on Encrypted Data using Homomorphic Encryption (CKKS)
+
+**Student:** Sania Dinesh Joshi (40425922)  
+**Supervisor:** Dr. Amir Sabbagh Molahosseini  
 
 ## Project Overview
-This project explores privacy‑preserving machine learning using Fully Homomorphic Encryption (FHE). The work is divided into two complementary components:
 
-Low‑level encrypted computation using the Microsoft SEAL library (CKKS scheme), focusing on encrypted arithmetic and vector operations.
+This project investigates privacy-preserving machine learning using Fully Homomorphic Encryption (FHE), focusing on both low-level encrypted computation and high-level encrypted model inference.
+The work is divided into two complementary components:
 
-High‑level encrypted machine learning inference using the Concrete‑ML framework, evaluating practical ML models under FHE constraints.
+### Low-Level Encrypted Computation (Microsoft SEAL – CKKS)
 
-The overarching goal is to assess the feasibility of performing machine‑learning inference directly on encrypted data and to quantify the trade‑offs between accuracy, runtime, and model complexity.
+- Encrypted arithmetic and vector operations in C++
+- Exploration of CKKS approximate arithmetic
+- Performance analysis of encrypted numerical operations
+
+### High-Level Encrypted Machine Learning (Concrete-ML)
+
+- Encrypted inference for practical ML models
+- Logistic Regression, Decision Trees, and XGBoost
+- Evaluation of quantization and model complexity under FHE
+- Comparison of plaintext, simulated FHE, and real FHE execution
+
+### Project Goal
+
+To assess the feasibility of running machine-learning inference directly on encrypted data and to quantify the trade-offs between:
+- Accuracy  
+- Runtime  
+- Model complexity  
+- Privacy  
 
 ## Repository Structure
-Folder	                 Description
-cpp/myseal/	       C++ implementation using Microsoft SEAL (CKKS). Includes encrypted arithmetic, vector operations, and reproducible examples.
-python/	Early      experiments using TenSEAL for encrypted inference.
-encrypted_ml/	   Concrete‑ML experiments for encrypted Logistic Regression, Decision Trees, and XGBoost.
-reports/	       Meeting notes, progress summaries, and experimental logs.
-scripts/	       Helper scripts for benchmarking, parameter sweeps, and reproducibility.
-notebooks/	       Jupyter notebooks, including the Concrete‑ML Credit Scoring baseline and extended experiments.
 
-## Encrypted Machine Learning (Concrete‑ML)
-This section evaluates encrypted inference using the Concrete‑ML framework.
+| Folder              | Description                                                                              |
+| `cpp/myseal/`       | C++ experiments using Microsoft SEAL (CKKS): encrypted arithmetic and vector operations  |
+| `python/`           | Early experiments using TenSEAL                                                          |
+| `encrypted_ml/`     | Concrete-ML experiments (Logistic Regression, Decision Trees, XGBoost)                   |
+| `notebooks/`        | Jupyter notebooks including the Concrete-ML Credit Scoring baseline and extensions       |
+| `scripts/`          | Helper scripts for benchmarking and parameter sweeps                                     |
+| `reports/`          | Meeting notes, progress summaries, and experimental logs                                 |
+
+
+## Encrypted Machine Learning (Concrete-ML)
+
+This section evaluates encrypted inference using the Concrete-ML framework.
+
 Experiments include:
+- Logistic Regression (sklearn vs Concrete-ML)
+- Decision Tree Classifier (sklearn vs Concrete-ML)
+- XGBoost (sklearn vs Concrete-ML)
+- Quantization effects (`n_bits`)
+- Comparison of plaintext, simulated FHE, and real FHE inference
 
-Logistic Regression (sklearn vs Concrete‑ML)
+These experiments analyse how model structure and quantization precision affect encrypted inference performance.
 
-Decision Tree Classifier (sklearn vs Concrete‑ML)
-
-XGBoost (sklearn vs Concrete‑ML)
-
-Quantization effects (n_bits)
-
-Comparison of plaintext, simulated FHE, and real FHE inference
-
-These experiments measure how model structure and quantization influence encrypted inference performance.
 
 ## Key Findings
 
-## Logistic Regression
-Concrete‑ML’s quantized Logistic Regression achieves identical accuracy to plaintext (~98%).
+### Logistic Regression
 
-FHE inference is 1000×–2000× slower, depending on quantization precision.
+- Concrete-ML achieves identical accuracy to plaintext (~98%).
+- FHE inference is approximately 1000×–2000× slower, depending on quantization.
 
-## Decision Trees
-Decision Trees scale poorly under FHE:
+### Decision Trees and Tree-Based Models
 
-Runtime increases sharply with tree depth.
+- Runtime increases sharply with tree depth.
+- Accuracy does not consistently improve with deeper trees.
+- Quantization (`n_bits`) is the dominant factor affecting both feasibility and performance.
 
-Accuracy does not consistently improve with deeper trees.
+### General Insight
 
-Quantization (n_bits) is the dominant factor affecting both runtime and feasibility.
+Fully Homomorphic Encryption enables privacy-preserving inference, but introduces significant computational overhead.
+This highlights a fundamental trade-off:
+Stronger privacy leads to higher computational cost.
 
-## General Insight
-FHE enables privacy‑preserving inference, but introduces significant computational overhead.
-The results highlight a core trade‑off: higher privacy → higher computational cost.
+## Running the Concrete-ML Experiments
 
-## Running the Concrete‑ML Experiments
-1. Install dependencies
-bash
+### 1. Install dependencies
+
+```bash
 pip install -r requirements.txt
 2. Launch Jupyter
-bash
 jupyter notebook
 3. Open the notebook
 Navigate to:
-Code
+
 notebooks/CreditScoring.ipynb
 4. Run the baseline
 The notebook evaluates:
 sklearn models
-Concrete‑ML quantized models
-FHE inference (with configurable sample size for speed)
+Concrete-ML quantized models
+FHE inference (with configurable sample size for faster experimentation)
+Results are collected into pandas DataFrames and visualised with runtime and accuracy plots.
 
-All results are collected into a pandas DataFrame for comparison, and plots are generated for runtime and accuracy analysis.
-
-## Building and Running the C++ CKKS Examples
-bash
+Building and Running the C++ CKKS Examples (Microsoft SEAL)
 cd cpp/myseal
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 build/Release/myseal.exe 2.5 -1.7 -2 0 1.5 3.2
-This runs encrypted arithmetic operations using the CKKS scheme implemented with Microsoft SEAL.
+This executes encrypted arithmetic operations using the CKKS scheme implemented with Microsoft SEAL.
+
