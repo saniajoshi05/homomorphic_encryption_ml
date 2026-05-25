@@ -1,7 +1,6 @@
 ﻿# Machine Learning on Encrypted Data using Homomorphic Encryption (CKKS)
 
-**Student:** Sania Dinesh Joshi (40425922)  
-**Supervisor:** Dr. Amir Sabbagh Molahosseini  
+**Student:** Sania Dinesh Joshi (40425922)   
 
 ## Project Overview
 
